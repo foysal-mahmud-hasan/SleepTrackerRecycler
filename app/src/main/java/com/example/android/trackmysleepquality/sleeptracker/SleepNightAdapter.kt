@@ -16,34 +16,47 @@
 
 package com.example.android.trackmysleepquality.sleeptracker
 
-import android.content.res.Resources
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.android.trackmysleepquality.R
 import com.example.android.trackmysleepquality.convertDurationToFormatted
 import com.example.android.trackmysleepquality.convertNumericQualityToString
 import com.example.android.trackmysleepquality.database.SleepNight
+import com.example.android.trackmysleepquality.databinding.ListItemSleepNightBinding
 
 // TODO (02) Create SleepNightAdapter class and extend it
 // from RecyclerView.Adapter<TextItemViewHolder>
-class SleepNightAdapter : RecyclerView.Adapter<SleepNightAdapter.ViewHolder>(){
+//import androidx one (for list adapter)
+class SleepNightAdapter : ListAdapter<SleepNight, SleepNightAdapter.ViewHolder>(SleepNightDiffCallBack()){
 
-    var data = listOf<SleepNight>()
-        set(value) {
-            field = value
-            notifyDataSetChanged()
-        }
 
-    override fun getItemCount(): Int {
-        return data.size
-    }
+    // already keep tracking done by ListAdapter
+//    var data = listOf<SleepNight>()
+//        set(value) {
+//            field = value
+//            notifyDataSetChanged()
+//        }
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val item = data[position]
+// list adapter also can get the item count
+//    override fun getItemCount(): Int {
+//        return data.size
+//    }
+
+    override fun onBindViewHolder(holder: ViewHolder,
+                                  position: Int) {
+
+        val item = getItem(position)
+
+
+//        cant call it while using listAdapter
+//        val item = data[position]
+
+
 //        val res = holder.itemView.context.resources
 //        holder.sleepLength.text = convertDurationToFormatted(item.startTimeMilli, item.endTimeMilli, res)
 //        holder.quality.text = convertNumericQualityToString(item.sleepQuality, res)
@@ -63,11 +76,14 @@ class SleepNightAdapter : RecyclerView.Adapter<SleepNightAdapter.ViewHolder>(){
 
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup,
+                                    viewType: Int): ViewHolder
+    {
         return ViewHolder.from(parent)
     }
 
-    class ViewHolder private constructor(itemView: View) : RecyclerView.ViewHolder(itemView){
+    class ViewHolder private constructor(itemView: ListItemSleepNightBinding) :
+        RecyclerView.ViewHolder(itemView){
 
         val sleepLength : TextView = itemView.findViewById(R.id.sleep_length)
         val quality : TextView = itemView.findViewById(R.id.quality_string)
@@ -93,16 +109,33 @@ class SleepNightAdapter : RecyclerView.Adapter<SleepNightAdapter.ViewHolder>(){
         companion object {
             fun from(parent: ViewGroup): ViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
-                val view = layoutInflater
-                    .inflate(R.layout.list_item_sleep_night, parent, false)
+
+                val binding = ListItemSleepNightBinding.inflate(layoutInflater,
+                    parent, false)
+                return ViewHolder(binding)
+
+//                already done by databinding
+//                val view = layoutInflater
+//                    .inflate(R.layout.list_item_sleep_night, parent, false)
                 //short way
                 //        val view = LayoutInflater.from(parent.context)
                 //            .inflate(R.layout.list_item_sleep_night, parent, false)
-                return ViewHolder(view)
+//                return ViewHolder(view)
             }
         }
     }
 
+
+
+}
+class SleepNightDiffCallBack : DiffUtil.ItemCallback<SleepNight>(){
+    override fun areItemsTheSame(oldItem: SleepNight, newItem: SleepNight): Boolean {
+        return oldItem.nightId == newItem.nightId
+    }
+
+    override fun areContentsTheSame(oldItem: SleepNight, newItem: SleepNight): Boolean {
+        return oldItem == newItem
+    }
 
 
 }
