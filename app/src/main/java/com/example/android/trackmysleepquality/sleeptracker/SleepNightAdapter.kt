@@ -18,8 +18,6 @@ package com.example.android.trackmysleepquality.sleeptracker
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -28,11 +26,12 @@ import com.example.android.trackmysleepquality.convertDurationToFormatted
 import com.example.android.trackmysleepquality.convertNumericQualityToString
 import com.example.android.trackmysleepquality.database.SleepNight
 import com.example.android.trackmysleepquality.databinding.ListItemSleepNightBinding
+import com.example.android.trackmysleepquality.generated.callback.OnClickListener
 
 // TODO (02) Create SleepNightAdapter class and extend it
 // from RecyclerView.Adapter<TextItemViewHolder>
 //import androidx one (for list adapter)
-class SleepNightAdapter : ListAdapter<SleepNight, SleepNightAdapter.ViewHolder>(SleepNightDiffCallBack()){
+class SleepNightAdapter(val onClickListener: SleepNightListener) : ListAdapter<SleepNight, SleepNightAdapter.ViewHolder>(SleepNightDiffCallBack()){
 
 
     // already keep tracking done by ListAdapter
@@ -72,7 +71,8 @@ class SleepNightAdapter : ListAdapter<SleepNight, SleepNightAdapter.ViewHolder>(
 //            else -> R.drawable.ic_sleep_active
 //        })
         //we extracted the code upper
-        holder.bind(item)
+//        holder.bind(item)
+        holder.bind(getItem(position))
 
     }
 
@@ -82,21 +82,22 @@ class SleepNightAdapter : ListAdapter<SleepNight, SleepNightAdapter.ViewHolder>(
         return ViewHolder.from(parent)
     }
 
-    class ViewHolder private constructor(itemView: ListItemSleepNightBinding) :
-        RecyclerView.ViewHolder(itemView){
-
-        val sleepLength : TextView = itemView.findViewById(R.id.sleep_length)
-        val quality : TextView = itemView.findViewById(R.id.quality_string)
-        val qualityImage : ImageView = itemView.findViewById(R.id.quality_image)
+    class ViewHolder private constructor(val binding: ListItemSleepNightBinding) :
+        RecyclerView.ViewHolder(binding.root){
 
 
         fun bind(item: SleepNight) {
-            val res = itemView.context.resources
-            sleepLength.text =
-                convertDurationToFormatted(item.startTimeMilli, item.endTimeMilli, res)
-            quality.text = convertNumericQualityToString(item.sleepQuality, res)
 
-            qualityImage.setImageResource(when (item.sleepQuality) {
+            binding.sleep = item
+            binding.executePendingBindings()
+        /*//binding adapter
+            val res = itemView.context.resources
+            binding.sleepLength.text =
+                convertDurationToFormatted(item.startTimeMilli, item.endTimeMilli, res)
+            binding.qualityString.text = convertNumericQualityToString(item.sleepQuality, res)
+
+            binding.qualityImage.setImageResource(
+                when (item.sleepQuality) {
                     0 -> R.drawable.ic_sleep_0
                     1 -> R.drawable.ic_sleep_1
                     2 -> R.drawable.ic_sleep_2
@@ -104,7 +105,9 @@ class SleepNightAdapter : ListAdapter<SleepNight, SleepNightAdapter.ViewHolder>(
                     4 -> R.drawable.ic_sleep_4
                     5 -> R.drawable.ic_sleep_5
                     else -> R.drawable.ic_sleep_active
-                })
+                }
+            )*/
+
         }
         companion object {
             fun from(parent: ViewGroup): ViewHolder {
@@ -140,6 +143,11 @@ class SleepNightDiffCallBack : DiffUtil.ItemCallback<SleepNight>(){
 
 }
 
+class SleepNightListener(val clickListener: (sleepId : Long) -> Unit){
+
+    fun onClick(night: SleepNight) = clickListener(night.nightId)
+
+}
 
 // TODO (03) Create a variable, data, that holds a list of SleepNight.
 
